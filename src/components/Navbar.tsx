@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, Sun, Moon, Code2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useActiveSection } from '@/hooks/useActiveSection';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
+  const activeSection = useActiveSection();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -13,11 +15,25 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Home', href: '#', active: true },
-    { name: 'Topics', href: '#topics' },
-    { name: 'AI Code', href: '#ai-code' },
-    { name: 'Features', href: '#features' },
+    { name: 'Home', href: '#', id: 'hero' },
+    { name: 'Topics', href: '#topics', id: 'topics' },
+    { name: 'AI Code', href: '#code-execution', id: 'code-execution' },
+    { name: 'Features', href: '#features', id: 'features' },
   ];
+
+  const scrollToSection = (href: string) => {
+    if (href === '#') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    const element = document.querySelector(href) as HTMLElement;
+    if (element) {
+      const offset = 80; // Account for fixed navbar
+      const elementPosition = element.offsetTop - offset;
+      window.scrollTo({ top: elementPosition, behavior: 'smooth' });
+    }
+  };
 
   return (
     <motion.nav
@@ -41,18 +57,21 @@ const Navbar = () => {
           <div className="hidden md:block">
             <div className="flex items-center space-x-8">
               {navLinks.map((link) => (
-                <motion.a
+                <motion.button
                   key={link.name}
-                  href={link.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection(link.href);
+                  }}
                   whileHover={{ scale: 1.05 }}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    link.active
+                    activeSection === link.id || (activeSection === '' && link.href === '#')
                       ? 'text-primary bg-primary/10 border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                   }`}
                 >
                   {link.name}
-                </motion.a>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -118,18 +137,21 @@ const Navbar = () => {
           >
             <div className="px-2 pt-2 pb-3 space-y-1 glass-card mt-2 mb-4">
               {navLinks.map((link) => (
-                <a
+                <button
                   key={link.name}
-                  href={link.href}
-                  className={`block px-3 py-2 rounded-lg text-base font-medium transition-all duration-300 ${
-                    link.active
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection(link.href);
+                    setIsOpen(false);
+                  }}
+                  className={`block w-full text-left px-3 py-2 rounded-lg text-base font-medium transition-all duration-300 ${
+                    activeSection === link.id || (activeSection === '' && link.href === '#')
                       ? 'text-primary bg-primary/10 border border-primary/20'
                       : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                   }`}
-                  onClick={() => setIsOpen(false)}
                 >
                   {link.name}
-                </a>
+                </button>
               ))}
               <div className="flex space-x-2 pt-4">
                 <Button variant="ghost" className="flex-1 text-foreground hover:bg-white/10">
