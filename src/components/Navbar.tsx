@@ -1,17 +1,40 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X, Sun, Moon, Code2 } from 'lucide-react';
+import { Menu, X, Sun, Moon, Code2, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useActiveSection } from '@/hooks/useActiveSection';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(true);
   const activeSection = useActiveSection();
+  const { user, signOut, loading } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle('light');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You've been logged out of your account.",
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Error signing out",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const navLinks = [
@@ -91,10 +114,34 @@ const Navbar = () => {
               )}
             </motion.button>
 
-            <Button variant="ghost" className="text-foreground hover:bg-white/10">
-              Login
-            </Button>
-            <Button className="hero-button">Sign Up</Button>
+            {!loading && (
+              user ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-muted-foreground">
+                    Welcome, {user.user_metadata?.full_name || user.email}
+                  </span>
+                  <Button
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    className="text-foreground hover:bg-white/10"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <Button variant="ghost" className="text-foreground hover:bg-white/10">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/auth">
+                    <Button className="hero-button">Sign Up</Button>
+                  </Link>
+                </>
+              )
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -154,10 +201,34 @@ const Navbar = () => {
                 </button>
               ))}
               <div className="flex space-x-2 pt-4">
-                <Button variant="ghost" className="flex-1 text-foreground hover:bg-white/10">
-                  Login
-                </Button>
-                <Button className="flex-1 hero-button">Sign Up</Button>
+                {!loading && (
+                  user ? (
+                    <div className="w-full">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Welcome, {user.user_metadata?.full_name || user.email}
+                      </p>
+                      <Button
+                        onClick={handleSignOut}
+                        variant="ghost"
+                        className="w-full text-foreground hover:bg-white/10"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Link to="/auth" className="flex-1">
+                        <Button variant="ghost" className="w-full text-foreground hover:bg-white/10">
+                          Login
+                        </Button>
+                      </Link>
+                      <Link to="/auth" className="flex-1">
+                        <Button className="w-full hero-button">Sign Up</Button>
+                      </Link>
+                    </>
+                  )
+                )}
               </div>
             </div>
           </motion.div>
