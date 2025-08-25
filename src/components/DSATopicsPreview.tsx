@@ -10,6 +10,7 @@ import {
   BookOpen 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const DSATopicsPreview = () => {
   const topics = [
@@ -138,9 +139,11 @@ const DSATopicsPreview = () => {
             <p className="text-muted-foreground mb-6">
               Join thousands of developers mastering algorithms and data structures with our interactive platform.
             </p>
-            <Button className="hero-button">
-              Explore All Topics
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button className="hero-button" asChild>
+              <Link to="/topics">
+                Explore All Topics
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </motion.div>
