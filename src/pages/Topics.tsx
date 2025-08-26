@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Star, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,9 @@ import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Problem {
   id: string;
@@ -22,8 +25,18 @@ interface Topic {
 
 const Topics = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [completedProblems, setCompletedProblems] = useState<Set<string>>(new Set());
   const [selectedTopic, setSelectedTopic] = useState<string>('arrays-hashing');
+  const [loading, setLoading] = useState(true);
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, loading, navigate]);
 
   const topics: Topic[] = [
     {
@@ -285,19 +298,85 @@ const Topics = () => {
     }
   ];
 
+  // Load user progress from Supabase
+  const loadProgress = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('problem_id, completed')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const completed = new Set(
+        data?.filter(p => p.completed).map(p => p.problem_id) || []
+      );
+      setCompletedProblems(completed);
+    } catch (error) {
+      console.error('Error loading progress:', error);
+      toast({
+        title: "Error loading progress",
+        description: "Failed to load your progress. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Save progress to Supabase
+  const saveProgress = async (problemId: string, completed: boolean, topicId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: user.id,
+          problem_id: problemId,
+          topic_id: topicId,
+          completed,
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving progress:', error);
+      toast({
+        title: "Error saving progress",
+        description: "Failed to save your progress. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Load progress on component mount and user change
+  useEffect(() => {
+    if (user) {
+      loadProgress();
+    }
+  }, [user]);
+
   const currentTopic = topics.find(topic => topic.id === selectedTopic);
   const completedCount = currentTopic?.problems.filter(problem => completedProblems.has(problem.id)).length || 0;
   const totalCount = currentTopic?.problems.length || 0;
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  const toggleProblem = (problemId: string) => {
+  const toggleProblem = async (problemId: string) => {
     const newCompleted = new Set(completedProblems);
-    if (completedProblems.has(problemId)) {
+    const isCompleted = completedProblems.has(problemId);
+    
+    if (isCompleted) {
       newCompleted.delete(problemId);
     } else {
       newCompleted.add(problemId);
     }
+    
     setCompletedProblems(newCompleted);
+    
+    // Save to Supabase
+    await saveProgress(problemId, !isCompleted, selectedTopic);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -315,167 +394,182 @@ const Topics = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/')}
-                className="p-2"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">DSA Topics</h1>
-                <p className="text-muted-foreground text-sm">Practice problems by topic</p>
-              </div>
-            </div>
+      {/* Loading state */}
+      {loading && (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading your progress...</p>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar - Topic List */}
-          <div className="lg:col-span-1">
-            <div className="glass-card p-6 sticky top-24">
-              <h2 className="text-lg font-semibold mb-4">Topics</h2>
-              <div className="space-y-2">
-                {topics.map((topic) => {
-                  const topicCompleted = topic.problems.filter(p => completedProblems.has(p.id)).length;
-                  const topicTotal = topic.problems.length;
-                  const isActive = selectedTopic === topic.id;
-                  
-                  return (
-                    <button
-                      key={topic.id}
-                      onClick={() => setSelectedTopic(topic.id)}
-                      className={`w-full text-left p-3 rounded-lg transition-all ${
-                        isActive 
-                          ? 'bg-primary/10 border border-primary/20 text-primary' 
-                          : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-medium">{topic.name}</span>
-                        <span className="text-xs">{topicCompleted}/{topicTotal}</span>
-                      </div>
-                      <Progress 
-                        value={topicTotal > 0 ? (topicCompleted / topicTotal) * 100 : 0} 
-                        className="h-1"
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content - Problems Table */}
-          <div className="lg:col-span-3">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="glass-card overflow-hidden"
-            >
-              {/* Topic Header */}
-              <div className="p-6 border-b border-border/40">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold">{currentTopic?.name}</h2>
-                  <div className="text-sm text-muted-foreground">
-                    ({completedCount} / {totalCount})
+      {/* Main content - only show when not loading */}
+      {!loading && (
+        <>
+          {/* Header */}
+          <div className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/')}
+                    className="p-2"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <div>
+                    <h1 className="text-2xl font-bold">DSA Topics</h1>
+                    <p className="text-muted-foreground text-sm">Practice problems by topic</p>
                   </div>
                 </div>
-                <Progress value={progressPercentage} className="h-2" />
               </div>
+            </div>
+          </div>
 
-              {/* Problems Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border/40">
-                      <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
-                      <th className="text-left p-4 font-medium text-muted-foreground">Star</th>
-                      <th className="text-left p-4 font-medium text-muted-foreground">Problem</th>
-                      <th className="text-left p-4 font-medium text-muted-foreground">Difficulty</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentTopic?.problems.map((problem, index) => {
-                      const isCompleted = completedProblems.has(problem.id);
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Sidebar - Topic List */}
+              <div className="lg:col-span-1">
+                <div className="glass-card p-6 sticky top-24">
+                  <h2 className="text-lg font-semibold mb-4">Topics</h2>
+                  <div className="space-y-2">
+                    {topics.map((topic) => {
+                      const topicCompleted = topic.problems.filter(p => completedProblems.has(p.id)).length;
+                      const topicTotal = topic.problems.length;
+                      const isActive = selectedTopic === topic.id;
                       
                       return (
-                        <motion.tr
-                          key={problem.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className="border-b border-border/20 hover:bg-muted/30 transition-colors"
+                        <button
+                          key={topic.id}
+                          onClick={() => setSelectedTopic(topic.id)}
+                          className={`w-full text-left p-3 rounded-lg transition-all ${
+                            isActive 
+                              ? 'bg-primary/10 border border-primary/20 text-primary' 
+                              : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground'
+                          }`}
                         >
-                          <td className="p-4">
-                            <Checkbox
-                              checked={isCompleted}
-                              onCheckedChange={() => toggleProblem(problem.id)}
-                              className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                            />
-                          </td>
-                          <td className="p-4">
-                            <button className="text-yellow-400 hover:text-yellow-300 transition-colors">
-                              <Star className="h-4 w-4" />
-                            </button>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center space-x-2">
-                              <span className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
-                                {problem.name}
-                              </span>
-                              <a
-                                href={problem.leetcodeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-primary transition-colors"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <Badge variant="outline" className={getDifficultyColor(problem.difficulty)}>
-                              {problem.difficulty}
-                            </Badge>
-                          </td>
-                        </motion.tr>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">{topic.name}</span>
+                            <span className="text-xs">{topicCompleted}/{topicTotal}</span>
+                          </div>
+                          <Progress 
+                            value={topicTotal > 0 ? (topicCompleted / topicTotal) * 100 : 0} 
+                            className="h-1"
+                          />
+                        </button>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
               </div>
 
-              {/* Completion Stats */}
-              {completedCount === totalCount && totalCount > 0 && (
+              {/* Main Content - Problems Table */}
+              <div className="lg:col-span-3">
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-6 bg-green-500/5 border-t border-green-500/20"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="glass-card overflow-hidden"
                 >
-                  <div className="flex items-center space-x-3 text-green-400">
-                    <CheckCircle2 className="h-6 w-6" />
-                    <div>
-                      <h3 className="font-semibold">Topic Completed!</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Great job! You've completed all problems in {currentTopic?.name}.
-                      </p>
+                  {/* Topic Header */}
+                  <div className="p-6 border-b border-border/40">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-bold">{currentTopic?.name}</h2>
+                      <div className="text-sm text-muted-foreground">
+                        ({completedCount} / {totalCount})
+                      </div>
                     </div>
+                    <Progress value={progressPercentage} className="h-2" />
                   </div>
+
+                  {/* Problems Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border/40">
+                          <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
+                          <th className="text-left p-4 font-medium text-muted-foreground">Star</th>
+                          <th className="text-left p-4 font-medium text-muted-foreground">Problem</th>
+                          <th className="text-left p-4 font-medium text-muted-foreground">Difficulty</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentTopic?.problems.map((problem, index) => {
+                          const isCompleted = completedProblems.has(problem.id);
+                          
+                          return (
+                            <motion.tr
+                              key={problem.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3, delay: index * 0.05 }}
+                              className="border-b border-border/20 hover:bg-muted/30 transition-colors"
+                            >
+                              <td className="p-4">
+                                <Checkbox
+                                  checked={isCompleted}
+                                  onCheckedChange={() => toggleProblem(problem.id)}
+                                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                />
+                              </td>
+                              <td className="p-4">
+                                <button className="text-yellow-400 hover:text-yellow-300 transition-colors">
+                                  <Star className="h-4 w-4" />
+                                </button>
+                              </td>
+                              <td className="p-4">
+                                <div className="flex items-center space-x-2">
+                                  <span className={`font-medium ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+                                    {problem.name}
+                                  </span>
+                                  <a
+                                    href={problem.leetcodeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-muted-foreground hover:text-primary transition-colors"
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                  </a>
+                                </div>
+                              </td>
+                              <td className="p-4">
+                                <Badge variant="outline" className={getDifficultyColor(problem.difficulty)}>
+                                  {problem.difficulty}
+                                </Badge>
+                              </td>
+                            </motion.tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Completion Stats */}
+                  {completedCount === totalCount && totalCount > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-6 bg-green-500/5 border-t border-green-500/20"
+                    >
+                      <div className="flex items-center space-x-3 text-green-400">
+                        <CheckCircle2 className="h-6 w-6" />
+                        <div>
+                          <h3 className="font-semibold">Topic Completed!</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Great job! You've completed all problems in {currentTopic?.name}.
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
-              )}
-            </motion.div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
