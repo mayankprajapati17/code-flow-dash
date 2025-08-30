@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Star, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Star, ExternalLink, CheckCircle2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import StreakDisplay from '@/components/StreakDisplay';
+import NotesDialog from '@/components/NotesDialog';
 
 interface Problem {
   id: string;
@@ -30,6 +32,19 @@ const Topics = () => {
   const [completedProblems, setCompletedProblems] = useState<Set<string>>(new Set());
   const [selectedTopic, setSelectedTopic] = useState<string>('arrays-hashing');
   const [loading, setLoading] = useState(false);
+  const [notesDialog, setNotesDialog] = useState<{
+    isOpen: boolean;
+    problemId: string;
+    problemName: string;
+    topicId: string;
+    difficulty: 'Easy' | 'Medium' | 'Hard';
+  }>({
+    isOpen: false,
+    problemId: '',
+    problemName: '',
+    topicId: '',
+    difficulty: 'Easy'
+  });
 
   const topics: Topic[] = [
     {
@@ -386,6 +401,20 @@ const Topics = () => {
     }
   };
 
+  const openNotesDialog = (problem: Problem) => {
+    setNotesDialog({
+      isOpen: true,
+      problemId: problem.id,
+      problemName: problem.name,
+      topicId: selectedTopic,
+      difficulty: problem.difficulty
+    });
+  };
+
+  const closeNotesDialog = () => {
+    setNotesDialog(prev => ({ ...prev, isOpen: false }));
+  };
+
   if (loading && isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -428,6 +457,9 @@ const Topics = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Streak Display - Only for authenticated users */}
+        {isAuthenticated && <StreakDisplay />}
+        
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar - Topic List */}
           <div className="lg:col-span-1">
@@ -502,6 +534,9 @@ const Topics = () => {
                       <th className="text-left p-4 font-medium text-muted-foreground">Star</th>
                       <th className="text-left p-4 font-medium text-muted-foreground">Problem</th>
                       <th className="text-left p-4 font-medium text-muted-foreground">Difficulty</th>
+                      {isAuthenticated && (
+                        <th className="text-left p-4 font-medium text-muted-foreground">Notes</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -550,6 +585,18 @@ const Topics = () => {
                               {problem.difficulty}
                             </Badge>
                           </td>
+                          {isAuthenticated && (
+                            <td className="p-4">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openNotesDialog(problem)}
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                <FileText className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          )}
                         </motion.tr>
                       );
                     })}
@@ -579,6 +626,16 @@ const Topics = () => {
           </div>
         </div>
       </div>
+
+      {/* Notes Dialog */}
+      <NotesDialog
+        isOpen={notesDialog.isOpen}
+        onClose={closeNotesDialog}
+        problemId={notesDialog.problemId}
+        problemName={notesDialog.problemName}
+        topicId={notesDialog.topicId}
+        difficulty={notesDialog.difficulty}
+      />
     </div>
   );
 };
