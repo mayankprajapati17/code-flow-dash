@@ -20,6 +20,8 @@ export type Database = {
           completed_at: string | null
           created_at: string
           id: string
+          last_activity_date: string | null
+          notes: string | null
           problem_id: string
           topic_id: string
           updated_at: string
@@ -30,6 +32,8 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          last_activity_date?: string | null
+          notes?: string | null
           problem_id: string
           topic_id: string
           updated_at?: string
@@ -40,8 +44,40 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           id?: string
+          last_activity_date?: string | null
+          notes?: string | null
           problem_id?: string
           topic_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_activity_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
           updated_at?: string
           user_id?: string
         }
