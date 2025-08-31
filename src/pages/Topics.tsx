@@ -347,6 +347,8 @@ const Topics = () => {
           problem_id: problemId,
           topic_id: topicId,
           completed,
+        }, {
+          onConflict: 'user_id,problem_id'
         });
 
       if (error) throw error;

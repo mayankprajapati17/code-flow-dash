@@ -81,6 +81,8 @@ const NotesDialog = ({
           problem_id: problemId,
           topic_id: topicId,
           notes: notes.trim(),
+        }, {
+          onConflict: 'user_id,problem_id'
         });
 
       if (error) throw error;
