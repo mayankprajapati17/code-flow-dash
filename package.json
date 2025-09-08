@@ -13,7 +13,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "npm --prefix AlgolearnWeb install"
+    "postinstall": "node -e \"const fs=require('fs'); process.exit(fs.existsSync('AlgolearnWeb/package.json')?0:1)\" && npm --prefix AlgolearnWeb install || echo Skipping AlgolearnWeb install"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
