@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Play, Code, Terminal, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import codeEditorPreview from '@/assets/code-editor-preview.jpg';
+import { launchAlgolearnWeb } from '@/utils/launchAlgolearnWeb';
 
 const CodeExecutionPreview = () => {
   return (
@@ -110,7 +111,10 @@ const CodeExecutionPreview = () => {
 
             {/* CTA Button */}
             <div className="text-center mt-12">
-              <Button className="hero-button group">
+              <Button 
+                className="hero-button group" 
+                onClick={() => launchAlgolearnWeb()}
+              >
                 <Play className="mr-2 h-4 w-4" />
                 Try Code Editor
               </Button>
