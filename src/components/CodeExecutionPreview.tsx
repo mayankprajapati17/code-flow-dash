@@ -1,10 +1,20 @@
-import { motion } from 'framer-motion';
-import { Play, Code, Terminal, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import codeEditorPreview from '@/assets/code-editor-preview.jpg';
+<<<<<<< Updated upstream
 import { launchAlgolearnWeb } from '@/utils/launchAlgolearnWeb';
+=======
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { Code, Play, Terminal, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+>>>>>>> Stashed changes
 
 const CodeExecutionPreview = () => {
+  const navigate = useNavigate();
+
+  const handleTryCodeEditor = () => {
+    navigate('/algolearn');
+  };
+
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8" id="code-execution">
       <div className="max-w-6xl mx-auto">
@@ -111,10 +121,14 @@ const CodeExecutionPreview = () => {
 
             {/* CTA Button */}
             <div className="text-center mt-12">
+<<<<<<< Updated upstream
               <Button 
                 className="hero-button group" 
                 onClick={() => launchAlgolearnWeb()}
               >
+=======
+              <Button className="hero-button group" onClick={handleTryCodeEditor}>
+>>>>>>> Stashed changes
                 <Play className="mr-2 h-4 w-4" />
                 Try Code Editor
               </Button>

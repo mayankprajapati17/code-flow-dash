@@ -1,9 +1,16 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import heroLaptop from '@/assets/hero-laptop.jpg';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/code-editor');
+  };
+
   return (
     <section id="hero" className="min-h-screen flex items-center justify-center pt-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -40,7 +47,7 @@ const HeroSection = () => {
               transition={{ duration: 0.8, delay: 0.8 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <Button className="hero-button group">
+              <Button className="hero-button group" onClick={handleGetStarted}>
                 Get Started
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>

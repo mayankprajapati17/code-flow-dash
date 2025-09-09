@@ -1,0 +1,9 @@
+@echo off
+echo Starting Unified Integrated Server on Port 8080...
+echo This will run both the main project and AlgolearnWeb functionality on the same port
+echo.
+echo Setting PORT environment variable to 8080...
+set PORT=8080
+echo.
+echo Starting the integrated server...
+npm run dev:server
