@@ -4,11 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AlgolearnWeb from "./pages/AlgolearnWeb";
+import Auth from "./pages/Auth";
 import CodeEditor from "./pages/CodeEditor";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Topics from "./pages/Topics";
 import NotFound from "./pages/NotFound";
+import Topics from "./pages/Topics";
 
 const queryClient = new QueryClient();
 
@@ -20,13 +20,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-<<<<<<< Updated upstream
           <Route path="/auth" element={<Auth />} />
           <Route path="/topics" element={<Topics />} />
-=======
           <Route path="/code-editor" element={<CodeEditor />} />
           <Route path="/algolearn" element={<AlgolearnWeb />} />
->>>>>>> Stashed changes
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
