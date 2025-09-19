@@ -1,31 +1,126 @@
- Algolearn: Your All-in-One Coding Practice Platform 🚀
 
-**Algolearn**, formerly **Code-Flow-Dash**, is a modern, full-stack web application designed to help you master coding and data structures. It provides a seamless, interactive environment for practicing your skills with **real-time code execution, structured learning paths, and intelligent, AI-powered assistance.**
 
-Whether you're preparing for a technical interview or just sharpening your skills, Algolearn is your personal co-pilot, helping you solve problems and track your progress in one intuitive, sleek platform.
+**Algolearn - Comprehensive DSA Learning & Code Execution Platform**
 
------
+**Overview**
+Algolearn is a modern full-stack web application designed as an all-in-one coding practice platform for Data Structures and Algorithms (DSA). It combines a sleek landing page showcasing platform capabilities with an integrated code execution environment supporting Python and Java. The platform features curated DSA problems organized by topics, real-time code execution, AI-powered assistance, and progress tracking, all built with React and enhanced by Supabase backend services.
 
-## ✨ Key Features
+**System Architecture**
 
-  - **Instant Code Execution:** Run Python and Java code directly in your browser with live, real-time output.
-  - **Curated DSA Problems:** Practice top-picked Data Structures and Algorithms (DSA) questions, organized by topic for efficient learning.
-  - **Personalized Progress Tracking:** Stay motivated by monitoring your completion status and learning journey with a built-in dashboard.
-  - **AI-Powered Guidance:** Overcome tough challenges with interactive hints and guidance, helping you learn without getting stuck.
-  - **Modern, Intuitive UI:** Enjoy a clean, responsive, and user-friendly interface designed for a smooth coding experience.
+**Frontend Architecture**
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite for fast development and optimized builds
+- **UI Framework**: Tailwind CSS with shadcn/ui component library
+- **State Management**: TanStack Query for server state management
+- **Routing**: React Router DOM for client-side navigation
+- **Styling**: CSS custom properties with comprehensive design system
+- **Authentication**: Supabase Auth integration
+- **Database**: Supabase PostgreSQL with real-time capabilities
 
------
+**Backend Architecture**
+- **Backend-as-a-Service**: Supabase for authentication, database, and real-time features
+- **Code Execution**: Integrated Node.js/Express server with Python and Java support
+- **API Design**: RESTful API with proxy configuration via Vite
+- **Development**: Hot reload with integrated server setup
 
-## 🛠️ Tech Stack
+**Key Components**
 
-This project is built with a robust and scalable tech stack:
+**Landing Page System**
+- **Hero Section**: Animated introduction with call-to-action buttons and platform statistics
+- **Features Showcase**: AI-powered learning, secure execution, and performance metrics
+- **DSA Topics Preview**: Interactive grid of algorithm categories with problem counts
+- **Code Execution Preview**: Visual demonstration of real-time code execution capabilities
+- **Responsive Design**: Mobile-first approach with Framer Motion animations
 
-  - **Frontend:** React.js, Tailwind CSS
-  - **Backend:** Node.js, Express.js
-  - **Execution Engine:** Sandboxed Python & Java environment for secure, reliable code execution.
-  - **Database:** MongoDB / PostgreSQL
-  - **Other Tools:** WebSockets (for real-time output), AI API for intelligent hints.
+**Integrated Code Editor**
+- **Multi-Language Support**: Python and Java execution with language-specific snippets
+- **Real-Time Execution**: Instant code compilation and execution with output display
+- **AI Assistance**: Error explanation and debugging help powered by Replit AI
+- **User Interface**: Monaco-style editor with syntax highlighting and line numbers
+- **Output Management**: Copy, clear, and error handling functionality
 
+**DSA Learning System**
+- **Topic Organization**: Comprehensive categorization (Arrays, Trees, Graphs, etc.)
+- **Difficulty Levels**: Easy, Medium, Hard problem classification
+- **LeetCode Integration**: Direct links to original problem statements
+- **Progress Tracking**: User completion status and streak display
+- **Problem Database**: 200+ curated DSA problems across multiple categories
+
+**Authentication & User Management**
+- **Supabase Auth**: Email/password and social login integration
+- **User Profiles**: Progress tracking and personalized dashboards
+- **Session Management**: Secure token-based authentication
+- **Profile Management**: User preferences and settings
+
+**Data Flow**
+
+**Learning Flow**
+1. **Landing Page**: Users discover platform capabilities and features
+2. **Topic Selection**: Browse DSA categories and select learning paths
+3. **Problem Access**: Navigate to specific problems via LeetCode links
+4. **Code Practice**: Use integrated editor for solution development
+5. **Real-Time Execution**: Test solutions with immediate feedback
+6. **Progress Tracking**: Monitor completion status and maintain streaks
+
+**Code Execution Flow**
+1. **Language Selection**: Choose between Python and Java
+2. **Code Input**: Write solutions in the integrated editor
+3. **Execution Request**: Submit code via API proxy to execution server
+4. **Processing**: Server compiles/interprets and executes code securely
+5. **Result Display**: Output, errors, and execution time shown in real-time
+6. **AI Assistance**: Automatic error explanations when execution fails
+
+**External Dependencies**
+
+**Frontend Dependencies**
+- **@supabase/supabase-js**: Database and authentication client
+- **@tanstack/react-query**: Server state management and caching
+- **framer-motion**: Animation and transition effects
+- **@radix-ui/***: Accessible UI component primitives
+- **tailwindcss**: Utility-first CSS framework
+- **react-router-dom**: Client-side routing
+- **lucide-react**: Modern icon library
+
+**Backend Dependencies**
+- **Supabase**: Backend-as-a-Service platform
+- **Express**: Code execution server framework
+- **@replit/ai-modelfarm**: AI-powered code assistance
+
+**Database Schema**
+- **User Profiles**: Personal information and preferences
+- **Progress Tracking**: Problem completion and streak data
+- **Session Management**: Authentication and user state
+- **Problem Metadata**: Topic categorization and difficulty levels
+
+**Deployment Strategy**
+
+**Development Environment**
+- **Frontend**: Vite dev server on port 8080
+- **Backend**: Express server on port 3001 with API proxy
+- **Database**: Supabase cloud instance
+- **Commands**: `npm run dev:integrated` for full-stack development
+
+**Production Build**
+- **Frontend**: Static assets optimized with Vite
+- **Backend**: Serverless functions via Supabase Edge Functions
+- **CDN**: Global content delivery for optimal performance
+- **Commands**: `npm run build` for production optimization
+
+**Security Considerations**
+- **Row Level Security**: Supabase RLS policies for data protection
+- **Code Execution Sandboxing**: Isolated execution environment
+- **Authentication**: JWT-based secure session management
+- **Input Validation**: Zod schemas for type-safe API interactions
+- **CORS Configuration**: Secure cross-origin resource sharing
+
+**Recent Architecture Updates**
+- **Integrated Development**: Unified landing page and code editor experience
+- **Enhanced DSA Coverage**: Expanded to 200+ problems across 10+ categories
+- **LeetCode Integration**: Direct problem linking for seamless workflow
+- **Responsive Design**: Mobile-optimized interface with touch support
+- **Performance Optimization**: Lazy loading and code splitting implementation
+
+This platform serves as a comprehensive solution for algorithm learning, combining educational content with practical coding experience in a modern, user-friendly interface.
 -----
 
 ## ⚡ Getting Started
